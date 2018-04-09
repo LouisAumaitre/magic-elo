@@ -10,12 +10,11 @@ class Deck:
 
     def __init__(self, name: str, w=0, u=0, b=0, r=0, g=0):
         self.name = name
-        total = w + u + b + r + g
-        self.w = w / total
-        self.u = u / total
-        self.b = b / total
-        self.r = r / total
-        self.g = g / total
+        self.w = w
+        self.u = u
+        self.b = b
+        self.r = r
+        self.g = g
 
         self.elo = 1000
         self.wins = 0

@@ -33,6 +33,9 @@ class Group:
 
     def new_deck(self):
         name = input('deck name ? ')
+        while ';' in name:
+            print('no \';\' in deck name')
+            name = input('deck name ? ')
         colors = ['w', 'u', 'b', 'r', 'g']
         deck_colors = {}
         for c in colors:
@@ -99,12 +102,26 @@ class Group:
 
     def save(self):
         with open(self.save_name, 'w') as f:
-            f.write('plop')
+            for deck in self.deck_list:
+                data = [deck.name, deck.w, deck.u, deck.b, deck.r, deck.g, deck.elo, deck.wins, deck.nulls, deck.losses]
+                txt = ';'.join([str(d) for d in data])
+                f.write(txt + '\n')
 
     def load(self):
         try:
             with open(self.save_name, 'r') as f:
-                for line in f.readline():
-                    print(line)
+                for line in f.readlines():
+                    data = line.split(';')
+                    if len(data) >= 10:
+                        deck = Deck(data[0], int(data[1]), int(data[2]), int(data[3]), int(data[4]), int(data[5]))
+                        deck.elo = float(data[6])
+                        deck.wins = int(data[7])
+                        deck.nulls = int(data[8])
+                        deck.losses = int(data[9])
+                        deck.update_coef()
+                        self.add_deck(deck)
+                    else:
+                        print(line)
+
         except FileNotFoundError:
             print(f'no save named {self.save_name}')
