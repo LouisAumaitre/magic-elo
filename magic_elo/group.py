@@ -6,6 +6,9 @@ class Group:
         self.decks = {}
 
     def add_deck(self, deck):
+        if deck.name.lower() in self.decks:
+            print(f'there is already a deck name \'{deck.name}\'')
+            return
         self.decks[deck.name.lower()] = deck
         print(f'new deck: {deck.title}')
 
