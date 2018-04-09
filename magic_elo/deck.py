@@ -1,31 +1,32 @@
+import math
+
+
 def proba(dif):
-    return 1 / (1 + 10 ^ (-dif / 400))
+    return 1 / (1 + math.pow(10, -dif / 400))
 
 
 class Deck:
     size = 60
 
-    def __init__(self, name: str, w: float=0, u: float=0, b: float=0, r: float=0, g: float=0):
+    def __init__(self, name: str, w=0, u=0, b=0, r=0, g=0):
         self.name = name
-        self.w = w
-        self.u = u
-        self.b = b
-        self.r = r
-        self.g = g
-
         total = w + u + b + r + g
-        assert total == 1
+        self.w = w / total
+        self.u = u / total
+        self.b = b / total
+        self.r = r / total
+        self.g = g / total
 
         self.elo = 1000
         self.wins = 0
-        self.null = 0
-        self.defeat = 0
+        self.nulls = 0
+        self.losses = 0
 
         self.coef = 40
 
     @property
     def games(self):
-        return self.wins + self.null + self.defeat
+        return self.wins + self.nulls + self.losses
 
     @property
     def colors(self):
@@ -44,19 +45,25 @@ class Deck:
 
     @property
     def title(self):
-        return f'{self.name} ({self.colors}) [ELO-{self.elo}]'
+        return f'{self.name} ({self.colors}) [ELO-{round(self.elo)}]'
 
     def win(self, opponent_elo):
         self.elo = self.elo + self.coef * (1 - proba(self.elo - opponent_elo))
+        self.wins += 1
         self.update_coef()
+        print(f'  {self.title}')
 
     def null(self, opponent_elo):
         self.elo = self.elo + self.coef * (0.5 - proba(self.elo - opponent_elo))
+        self.nulls += 1
         self.update_coef()
+        print(f'  {self.title}')
 
     def loss(self, opponent_elo):
         self.elo = self.elo + self.coef * (-proba(self.elo - opponent_elo))
+        self.losses += 1
         self.update_coef()
+        print(f'  {self.title}')
 
     def update_coef(self):
         if self.elo > 2400 or self.coef == 10:
