@@ -2,8 +2,9 @@ from magic_elo.deck import Deck
 
 
 class Group:
-    def __init__(self):
+    def __init__(self, save_name='magic-elo.save'):
         self.decks = {}
+        self.save_name = save_name
 
     def add_deck(self, deck):
         if deck.name.lower() in self.decks:
@@ -12,19 +13,23 @@ class Group:
         self.decks[deck.name.lower()] = deck
         print(f'new deck: {deck.title}')
 
-    def do(self):
-        message = 'Add ? '
-        if len(self.decks) > 0:
-            message = 'List/' + message
-        if len(self.decks) > 1:
-            message = 'Match/' + message
-        x = input(message)
-        if x in ['M', 'm']:
-            self.match()
-        if x in ['L', 'l']:
-            self.list()
-        if x in ['A', 'a']:
-            self.new_deck()
+    def run(self):
+        stop = False
+        while not stop:
+            message = 'Add/Quit ? '
+            if len(self.decks) > 0:
+                message = 'List/' + message
+            if len(self.decks) > 1:
+                message = 'Match/' + message
+            x = input(message)
+            if x in ['M', 'm']:
+                self.match()
+            if x in ['L', 'l']:
+                self.list()
+            if x in ['A', 'a']:
+                self.new_deck()
+            if x in ['Q', 'q']:
+                stop = True
 
     def new_deck(self):
         name = input('deck name ? ')
@@ -34,6 +39,7 @@ class Group:
             deck_colors[c] = int(input(f'{c} ? '))
         deck = Deck(name, **deck_colors)
         self.add_deck(deck)
+        self.save()
 
     def match(self):
         deck1 = self.select_deck()
@@ -50,6 +56,7 @@ class Group:
             self.null(deck1, deck2)
         if x in ['L', 'l', 'loss']:
             self.win(deck2, deck1)
+        self.save()
 
     def select_deck(self) -> Deck:
         x = input('deck ? ').lower()
@@ -89,3 +96,15 @@ class Group:
         elo_1 = deck1.elo
         deck1.null(deck2.elo)
         deck2.null(elo_1)
+
+    def save(self):
+        with open(self.save_name, 'w') as f:
+            f.write('plop')
+
+    def load(self):
+        try:
+            with open(self.save_name, 'r') as f:
+                for line in f.readline():
+                    print(line)
+        except FileNotFoundError:
+            print(f'no save named {self.save_name}')
