@@ -28,6 +28,14 @@ class Deck:
         return self.wins + self.nulls + self.losses
 
     @property
+    def color_repartition(self):
+        d = {'w': self.w, 'u': self.u, 'b': self.b, 'r': self.r, 'g': self.g}
+        total = sum(d.values())
+        for k, v in d.items():
+            d[k] = v / total
+        return d
+
+    @property
     def colors(self):
         c = ''
         if self.w:
@@ -44,7 +52,7 @@ class Deck:
 
     @property
     def title(self):
-        return f'{self.name} ({self.colors}) [ELO-{round(self.elo)}]'
+        return f'{self.name.ljust(30)} {self.colors.ljust(5)} [ELO-{round(self.elo)}]'
 
     def win(self, opponent_elo):
         self.elo = self.elo + self.coef * (1 - proba(self.elo - opponent_elo))

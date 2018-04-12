@@ -1,10 +1,21 @@
+from typing import List
+
 from magic_elo.deck import Deck
+
+
+class Action:
+    def __init__(self, name: str, shortcut: str, run):
+        self.name = name
+        self.shortcuts = [name.lower(), shortcut.lower()]
+        self.run = run
 
 
 class Group:
     def __init__(self, save_name='magic-elo.save'):
+        self._stop = False
         self.decks = {}
         self.save_name = save_name
+        self.load()
 
     def add_deck(self, deck):
         if deck.name.lower() in self.decks:
@@ -14,22 +25,30 @@ class Group:
         print(f'new deck: {deck.title}')
 
     def run(self):
-        stop = False
-        while not stop:
-            message = 'Add/Quit ? '
+        self._stop = False
+        while not self._stop:
+            actions: List[Action] = []
             if len(self.decks) > 0:
-                message = 'List/' + message
+                actions.append(Action('List', 'L', lambda: self.list()))
+                actions.append(Action('Edit', 'E', lambda: self.edit()))
             if len(self.decks) > 1:
-                message = 'Match/' + message
-            x = input(message)
-            if x in ['M', 'm']:
-                self.match()
-            if x in ['L', 'l']:
-                self.list()
-            if x in ['A', 'a']:
-                self.new_deck()
-            if x in ['Q', 'q']:
-                stop = True
+                actions.append(Action('Match', 'M', lambda: self.match()))
+            actions.append(Action('Add', 'A', lambda: self.new_deck()))
+            actions.append(Action('Stats', 'S', lambda: self.stats()))
+            actions.append(Action('Quit', 'Q', lambda: self.stop()))
+
+            message = ''
+            for a in actions:
+                message = message + '/' + a.name
+            message = message[1:] + ' ? '
+
+            x = input(message).lower()
+            for a in actions:
+                if x in a.shortcuts:
+                    a.run()
+
+    def stop(self):
+        self._stop = True
 
     def new_deck(self):
         name = input('deck name ? ')
@@ -39,9 +58,26 @@ class Group:
         colors = ['w', 'u', 'b', 'r', 'g']
         deck_colors = {}
         for c in colors:
-            deck_colors[c] = int(input(f'{c} ? '))
+            c_input = input(f'{c} ? ')
+            if c_input != '':
+                deck_colors[c] = int(c_input)
         deck = Deck(name, **deck_colors)
         self.add_deck(deck)
+        self.save()
+
+    def edit(self):
+        deck = self.select_deck()
+        name = input(f'deck name [{deck.name}] ? ')
+        while ';' in name:
+            print('no \';\' in deck name')
+            name = input(f'deck name [{deck.name}] ? ')
+        if name != '':
+            deck.name = name
+        colors = ['w', 'u', 'b', 'r', 'g']
+        for c in colors:
+            c_input = input(f'{c} [{deck.__getattribute__(c)}] ? ')
+            if c_input != '':
+                deck.__setattr__(c, int(c_input))
         self.save()
 
     def match(self):
@@ -125,3 +161,22 @@ class Group:
 
         except FileNotFoundError:
             print(f'no save named {self.save_name}')
+
+    def stats(self):
+        print(f'decks: {len(self.decks)}')
+        matches = sum([d.wins + d.nulls/2 for d in self.decks.values()])
+        print(f'matches: {matches}')
+        colors = {'w': 0, 'u': 0, 'b': 0, 'r': 0, 'g': 0}
+        elo = {'w': 0, 'u': 0, 'b': 0, 'r': 0, 'g': 0}
+        for d in self.decks.values():
+            for k, v in d.color_repartition.items():
+                colors[k] += v
+                elo[k] += d.elo * v
+        total = sum(colors.values())
+        color_message = ''
+        elo_message = ''
+        for c, v in colors.items():
+            color_message += (c.upper() + ': ' + str(round(100 * v / total)) + '%; ').ljust(9)
+            elo_message += (c.upper() + ': ' + str(round(elo[c] / v)) + '; ').ljust(9)
+        print(color_message)
+        print(elo_message)
