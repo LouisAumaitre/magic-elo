@@ -139,7 +139,10 @@ class Group:
     def save(self):
         with open(self.save_name, 'w') as f:
             for deck in self.deck_list:
-                data = [deck.name, deck.w, deck.u, deck.b, deck.r, deck.g, deck.elo, deck.wins, deck.nulls, deck.losses]
+                data = [
+                    deck.name, deck.w, deck.u, deck.b, deck.r, deck.g, deck.elo, deck.wins, deck.nulls, deck.losses,
+                    deck.coef,
+                ]
                 txt = ';'.join([str(d) for d in data])
                 f.write(txt + '\n')
 
@@ -154,6 +157,7 @@ class Group:
                         deck.wins = int(data[7])
                         deck.nulls = int(data[8])
                         deck.losses = int(data[9])
+                        deck.coef = int(data[10])
                         deck.update_coef()
                         self.add_deck(deck)
                     else:
