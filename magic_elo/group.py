@@ -78,6 +78,7 @@ class Group:
             c_input = input(f'{c} [{deck.__getattribute__(c)}] ? ')
             if c_input != '':
                 deck.__setattr__(c, int(c_input))
+        self.decks[deck.name] = deck
         self.save()
 
     def match(self):
@@ -124,7 +125,8 @@ class Group:
     def list(self, margin=''):
         deck_list = self.deck_list
         for i in range(0, len(deck_list)):
-            print(f'{margin}{i + 1}. {deck_list[i].title}')
+            int_s = str(i + 1).rjust(3)
+            print(f'{margin}{int_s}. {deck_list[i].title}')
 
     def win(self, deck1, deck2):
         elo_1 = deck1.elo
