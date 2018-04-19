@@ -52,7 +52,8 @@ class Deck:
 
     @property
     def title(self):
-        return f'{self.name.ljust(30)} {self.colors.ljust(5)} [ELO-{round(self.elo)}]'
+        elo = f'[ELO-{round(self.elo)}]'
+        return f'{self.name.ljust(30)} {self.colors.ljust(5)} {elo.rjust(10)}'
 
     def win(self, opponent_elo):
         self.elo = self.elo + self.coef * (1 - proba(self.elo - opponent_elo))

@@ -123,10 +123,13 @@ class Group:
         return sorted(self.decks.values(), key=lambda d: -d.elo)
 
     def list(self, margin=''):
+        max_stars = 5
         deck_list = self.deck_list
+        diff = (deck_list[0].elo - deck_list[-1].elo) / max_stars
         for i in range(0, len(deck_list)):
             int_s = str(i + 1).rjust(3)
-            print(f'{margin}{int_s}. {deck_list[i].title}')
+            stars = '*' * round((deck_list[i].elo - deck_list[-1].elo) / diff)
+            print(f'{margin}{int_s}. {deck_list[i].title} {stars.ljust(max_stars)}')
 
     def win(self, deck1, deck2):
         elo_1 = deck1.elo
