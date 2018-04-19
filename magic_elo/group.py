@@ -55,13 +55,13 @@ class Group:
         while ';' in name:
             print('no \';\' in deck name')
             name = input('deck name ? ')
-        colors = ['w', 'u', 'b', 'r', 'g']
+        colors = ['W', 'U', 'B', 'R', 'G']
         deck_colors = {}
         for c in colors:
             c_input = input(f'{c} ? ')
             if c_input != '':
                 deck_colors[c] = int(c_input)
-        deck = Deck(name, **deck_colors)
+        deck = Deck(name, deck_colors)
         self.add_deck(deck)
         self.save()
 
@@ -157,7 +157,11 @@ class Group:
                 for line in f.readlines():
                     data = line.split(';')
                     if len(data) >= 10:
-                        deck = Deck(data[0], int(data[1]), int(data[2]), int(data[3]), int(data[4]), int(data[5]))
+                        colors = ['W', 'U', 'B', 'R', 'G']
+                        card_colors = {}
+                        for i in range(5):
+                            card_colors[colors[i]] = int(data[i + 1])
+                        deck = Deck(data[0], card_colors)
                         deck.elo = float(data[6])
                         deck.wins = int(data[7])
                         deck.nulls = int(data[8])

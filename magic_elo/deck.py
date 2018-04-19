@@ -1,4 +1,5 @@
 import math
+from typing import Dict
 
 
 def proba(dif):
@@ -8,13 +9,10 @@ def proba(dif):
 class Deck:
     size = 60
 
-    def __init__(self, name: str, w=0, u=0, b=0, r=0, g=0):
+    def __init__(self, name: str, colors: Dict[str, int]):
         self.name = name
-        self.w = w
-        self.u = u
-        self.b = b
-        self.r = r
-        self.g = g
+        color_names = ['W', 'U', 'B', 'R', 'G']
+        self.cards = {name: colors.get(name, 0) for name in color_names}
 
         self.elo = 1000
         self.wins = 0
@@ -28,25 +26,17 @@ class Deck:
         return self.wins + self.nulls + self.losses
 
     @property
-    def color_repartition(self):
-        d = {'w': self.w, 'u': self.u, 'b': self.b, 'r': self.r, 'g': self.g}
-        total = sum(d.values())
-        for k, v in d.items():
-            d[k] = v / total
-        return d
-
-    @property
     def colors(self):
         c = ''
-        if self.w:
+        if self.W:
             c += 'W'
-        if self.u:
+        if self.U:
             c += 'U'
-        if self.b:
+        if self.B:
             c += 'B'
-        if self.r:
+        if self.R:
             c += 'R'
-        if self.g:
+        if self.G:
             c += 'G'
         return c
 
@@ -80,3 +70,52 @@ class Deck:
             self.coef = 40
         else:
             self.coef = 20
+
+    @property
+    def W(self):
+        return self.cards['W']
+
+    @property
+    def U(self):
+        return self.cards['U']
+
+    @property
+    def B(self):
+        return self.cards['B']
+
+    @property
+    def R(self):
+        return self.cards['R']
+
+    @property
+    def G(self):
+        return self.cards['G']
+
+    @property
+    def total_cards(self):
+        return self.W + self.U + self.B + self.R + self.G
+
+    @property
+    def w(self):
+        return self.W / self.total_cards
+
+    @property
+    def u(self):
+        return self.U / self.total_cards
+
+    @property
+    def b(self):
+        return self.B / self.total_cards
+
+    @property
+    def r(self):
+        return self.R / self.total_cards
+
+    @property
+    def g(self):
+        return self.G / self.total_cards
+
+    @property
+    def color_repartition(self):
+        d = {'w': self.w, 'u': self.u, 'b': self.b, 'r': self.r, 'g': self.g}
+        return d
