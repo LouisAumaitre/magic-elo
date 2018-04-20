@@ -1,12 +1,29 @@
 import math
-from typing import Dict
+from typing import Dict, Optional
 
 
 def proba(dif):
     return 1 / (1 + math.pow(10, -dif / 400))
 
 
-class Deck:
+class MatchInterface:
+    @property
+    def title(self):
+        return NotImplementedError
+
+    @property
+    def ready(self):
+        return NotImplementedError
+
+    def update(self):
+        return NotImplementedError
+
+    @property
+    def winner(self):
+        return NotImplementedError
+
+
+class Deck(MatchInterface):
     size = 60
 
     def __init__(self, name: str, colors: Dict[str, int]):
@@ -71,6 +88,12 @@ class Deck:
         else:
             self.coef = 20
 
+    def to_data(self) -> str:
+        data = [
+            self.name, self.W, self.U, self.B, self.R, self.G, self.elo, self.wins, self.nulls, self.losses, self.coef,
+        ]
+        return ';'.join([str(d) for d in data])
+
     @property
     def W(self):
         return self.cards['W']
@@ -119,3 +142,35 @@ class Deck:
     def color_repartition(self):
         d = {'w': self.w, 'u': self.u, 'b': self.b, 'r': self.r, 'g': self.g}
         return d
+
+    @property
+    def ready(self):
+        return True
+
+    def update(self):
+        pass
+
+    @property
+    def winner(self):
+        return self
+
+
+def deck_from_data(line: str) -> Optional[Deck]:
+    data = line.split(';')
+    if len(data) >= 11:
+        try:
+            colors = ['W', 'U', 'B', 'R', 'G']
+            card_colors = {}
+            for i in range(5):
+                card_colors[colors[i]] = int(data[i + 2])
+            deck = Deck(data[1], card_colors)
+            deck.elo = float(data[7])
+            deck.wins = int(data[8])
+            deck.nulls = int(data[9])
+            deck.losses = int(data[10])
+            deck.coef = int(data[11])
+            deck.update_coef()
+            return deck
+        except:
+            return None
+    return None

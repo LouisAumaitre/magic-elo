@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
-from magic_elo.deck import Deck
+from magic_elo.deck import Deck, deck_from_data
 from magic_elo.tournament import Tournament
 
 
@@ -14,12 +14,12 @@ class Action:
 class Group:
     def __init__(self, save_name='magic-elo.save'):
         self._stop = False
-        self.decks = {}
+        self.decks: Dict[str, Deck] = {}
         self.current_tournament: Optional[Tournament] = None
         self.save_name = save_name
         self.load()
 
-    def add_deck(self, deck):
+    def add_deck(self, deck: Deck):
         if deck.name.lower() in self.decks:
             print(f'there is already a deck name \'{deck.name}\'')
             return
@@ -161,31 +161,15 @@ class Group:
     def save(self):
         with open(self.save_name, 'w') as f:
             for deck in self.deck_list:
-                data = [
-                    deck.name, deck.W, deck.U, deck.B, deck.R, deck.G, deck.elo, deck.wins, deck.nulls, deck.losses,
-                    deck.coef,
-                ]
-                txt = ';'.join([str(d) for d in data])
-                f.write(txt + '\n')
+                f.write(deck.to_data() + '\n')
 
     def load(self):
         try:
             with open(self.save_name, 'r') as f:
                 for line in f.readlines():
-                    data = line.split(';')
-                    if len(data) >= 10:
-                        colors = ['W', 'U', 'B', 'R', 'G']
-                        card_colors = {}
-                        for i in range(5):
-                            card_colors[colors[i]] = int(data[i + 1])
-                        deck = Deck(data[0], card_colors)
-                        deck.elo = float(data[6])
-                        deck.wins = int(data[7])
-                        deck.nulls = int(data[8])
-                        deck.losses = int(data[9])
-                        deck.coef = int(data[10])
-                        deck.update_coef()
-                        self.add_deck(deck)
+                    d = deck_from_data(line)
+                    if d is not None:
+                        self.add_deck(d)
                     else:
                         print(line)
 

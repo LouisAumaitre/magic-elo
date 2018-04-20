@@ -1,10 +1,10 @@
 import random
 from typing import List, Union
 
-from magic_elo.deck import Deck
+from magic_elo.deck import Deck, MatchInterface
 
 
-class Match:
+class Match(MatchInterface):
     def __init__(self, parent1=None, parent2=None):
         self.deck1 = None
         self.deck2 = None
@@ -55,37 +55,15 @@ class Match:
         return None
 
 
-# class MatchSingle(Match):
-#     def __init__(self, parent=None):
-#         Match.__init__(self, parent)
-#         self.result = 'W'
-#
-#     @property
-#     def title(self):
-#         if self.deck1 is None:
-#             d1 = '?'.rjust(47)
-#             return f'{d1} ???'
-#         else:
-#             return f'{self.deck1.title} <-'
-#
-#
-# def match_factory(parent1: Union[Match, Deck, None], parent2: Union[Match, Deck, None]) -> Match:
-#     if parent1 is None:
-#         return MatchSingle(parent2)
-#     if parent2 is None:
-#         return MatchSingle(parent1)
-#     return Match(parent1, parent2)
-
-def new_round(previous: List[Union[Match, Deck]]):
+def new_round(previous: List[Union[MatchInterface]]) -> List[Union[MatchInterface]]:
     if len(previous) < 2:
             return []
-    pows = [pow(2, i) for i in range(10)]
+    pows: List[int] = [pow(2, i) for i in range(10)]
     if len(previous) in pows:
         return [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(len(previous) // 2)]
 
-    next_nb = [i for i in pows if i < len(previous)][-1]
-    remove = len(previous) - next_nb
-    _round = [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(remove)]
+    remove = len(previous) - [i for i in pows if i < len(previous)][-1]
+    _round: List[Union[MatchInterface]] = [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(remove)]
     _round.extend(previous[remove * 2:])
     return _round
 
@@ -129,3 +107,7 @@ class Tournament:
                 print(f'== ROUND {i + 1} ==')
             for t in round_titles:
                 print(t)
+
+    def to_data(self) -> str:
+        data = 'T'
+        return data
