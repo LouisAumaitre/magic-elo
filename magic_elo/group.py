@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 from magic_elo.deck import Deck
+from magic_elo.tournament import Tournament
 
 
 class Action:
@@ -14,6 +15,7 @@ class Group:
     def __init__(self, save_name='magic-elo.save'):
         self._stop = False
         self.decks = {}
+        self.current_tournament: Optional[Tournament] = None
         self.save_name = save_name
         self.load()
 
@@ -35,6 +37,7 @@ class Group:
                 actions.append(Action('Match', 'M', lambda: self.match()))
             actions.append(Action('Add', 'A', lambda: self.new_deck()))
             actions.append(Action('Stats', 'S', lambda: self.stats()))
+            actions.append(Action('Tournament', 'T', lambda: self.new_tournament()))
             actions.append(Action('Quit', 'Q', lambda: self.stop()))
 
             message = ''
@@ -92,11 +95,23 @@ class Group:
         x = input(f'  result: W/N/L ? ')
         if x in ['W', 'w', 'win']:
             self.win(deck1, deck2)
+            if self.current_tournament is not None:
+                self.current_tournament.do_match(deck1, deck2, 'W')
+                self.current_tournament.do_match(deck2, deck1, 'L')
         if x in ['N', 'n', 'null']:
             self.null(deck1, deck2)
         if x in ['L', 'l', 'loss']:
             self.win(deck2, deck1)
+            if self.current_tournament is not None:
+                self.current_tournament.do_match(deck1, deck2, 'L')
+                self.current_tournament.do_match(deck2, deck1, 'W')
         self.save()
+
+    def new_tournament(self):
+        if self.current_tournament is None:
+            self.current_tournament = Tournament(self.deck_list)
+        self.current_tournament.update()
+        self.current_tournament.print(all=False)
 
     def select_deck(self) -> Deck:
         x = input('deck ? ').lower()
@@ -145,7 +160,7 @@ class Group:
         with open(self.save_name, 'w') as f:
             for deck in self.deck_list:
                 data = [
-                    deck.name, deck.w, deck.u, deck.b, deck.r, deck.g, deck.elo, deck.wins, deck.nulls, deck.losses,
+                    deck.name, deck.W, deck.U, deck.B, deck.R, deck.G, deck.elo, deck.wins, deck.nulls, deck.losses,
                     deck.coef,
                 ]
                 txt = ';'.join([str(d) for d in data])
