@@ -1,5 +1,6 @@
 import random
-from typing import List, Union
+from enum import Enum
+from typing import List, Union, Dict
 
 from magic_elo.deck import Deck, MatchInterface
 
@@ -62,21 +63,29 @@ def new_round(previous: List[Union[MatchInterface]]) -> List[Union[MatchInterfac
     if len(previous) in pows:
         return [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(len(previous) // 2)]
 
-    remove = len(previous) - [i for i in pows if i < len(previous)][-1]
-    _round: List[Union[MatchInterface]] = [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(remove)]
-    _round.extend(previous[remove * 2:])
+    first_round = len(previous) - [i for i in pows if i < len(previous)][-1]
+    _round: List[Union[MatchInterface]] = [Match(previous[i * 2], previous[i * 2 + 1]) for i in range(first_round)]
+    _round.extend(previous[first_round * 2:])
     return _round
 
 
+class OrderMode(Enum):
+    Same = 'same'
+    Random = 'random'
+    Elo = 'elo'
+
+
 class Tournament:
-    def __init__(self, decks, random_order):
-        if random_order:
-            decks = sorted(decks, key=lambda x: random.random())
+    def __init__(self, decks, order: OrderMode=OrderMode.Same):
+        if order == OrderMode.Random:
+            self.decks = sorted(decks, key=lambda x: random.random())
+        elif order == OrderMode.Elo:
+            self.decks = sorted(decks, key=lambda x: x.elo)
         else:
-            decks = sorted(decks, key=lambda x: x.elo)
+            self.decks = decks
 
         self.rounds = []
-        _round = new_round(decks)
+        _round = new_round(self.decks)
         while _round:
             self.rounds.append(_round)
             _round = new_round(_round)
@@ -109,5 +118,27 @@ class Tournament:
                 print(t)
 
     def to_data(self) -> str:
-        data = 'T'
-        return data
+        rounds_data = []
+        for r in self.rounds:
+            rounds_data.append(''.join([m.result for m in r]))
+        decks_data = ';'.join([d.name.lower() for d in self.decks])
+        data = ['T', '/'.join(rounds_data), decks_data]
+        return ';;'.join(data)
+
+
+def tournament_from_data(line: str, provided_decks: Dict[str, Deck]) -> Tournament:
+    _, rounds_join, decks_join = line.split(';;')
+    deck_names = decks_join.split(';')
+    deck_list = [provided_decks[name.lower()] for name in deck_names]
+    tournament = Tournament(deck_list, OrderMode.Same)
+    rounds_data = rounds_join.split('/')
+    for i in range(len(tournament.rounds)):
+        t_round = tournament.rounds[i]
+        for j in range(len(t_round)):
+            result = rounds_data[i][j]
+            if result != Deck.result:
+                try:
+                    t_round[j].result = result
+                except AttributeError:
+                    print(f'WARNING: cannot set result \'{result}\' to {t_round[i].title}')
+    return tournament

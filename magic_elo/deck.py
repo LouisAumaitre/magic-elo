@@ -90,7 +90,8 @@ class Deck(MatchInterface):
 
     def to_data(self) -> str:
         data = [
-            self.name, self.W, self.U, self.B, self.R, self.G, self.elo, self.wins, self.nulls, self.losses, self.coef,
+            'D', self.name, self.W, self.U, self.B, self.R, self.G, self.elo, self.wins, self.nulls, self.losses,
+            self.coef,
         ]
         return ';'.join([str(d) for d in data])
 
@@ -153,6 +154,8 @@ class Deck(MatchInterface):
     @property
     def winner(self):
         return self
+
+    result = 'D'
 
 
 def deck_from_data(line: str) -> Optional[Deck]:

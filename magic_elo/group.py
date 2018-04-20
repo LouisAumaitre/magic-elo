@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict
 
 from magic_elo.deck import Deck, deck_from_data
-from magic_elo.tournament import Tournament
+from magic_elo.tournament import Tournament, tournament_from_data, OrderMode
 
 
 class Action:
@@ -109,9 +109,13 @@ class Group:
 
     def new_tournament(self):
         if self.current_tournament is None:
-            x = input('random: Y/N ? ')
-            is_random = x in ['y', 'Y', 'Yes', 'r', 'R', 'random', '']
-            self.current_tournament = Tournament(self.deck_list, is_random)
+            x = input('order mode: Higher first/Lower first/Random ? ')
+            order = OrderMode.Same
+            if x in ['l', 'L']:
+                order = OrderMode.Elo
+            if x in ['r', 'R']:
+                order = OrderMode.Random
+            self.current_tournament = Tournament(self.deck_list, order)
         self.current_tournament.update()
         self.current_tournament.print(print_all=False)
 
@@ -162,14 +166,21 @@ class Group:
         with open(self.save_name, 'w') as f:
             for deck in self.deck_list:
                 f.write(deck.to_data() + '\n')
+            if self.current_tournament is not None:
+                f.write(self.current_tournament.to_data() + '\n')
 
     def load(self):
         try:
             with open(self.save_name, 'r') as f:
                 for line in f.readlines():
-                    d = deck_from_data(line)
-                    if d is not None:
-                        self.add_deck(d)
+                    if line[-1] == '\n':
+                        line = line[:-1]
+                    if line[0] == 'D':
+                        d = deck_from_data(line)
+                        if d is not None:
+                            self.add_deck(d)
+                    elif line[0] == 'T':
+                        self.current_tournament = tournament_from_data(line, self.decks)
                     else:
                         print(line)
 
