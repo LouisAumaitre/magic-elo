@@ -109,9 +109,11 @@ class Group:
 
     def new_tournament(self):
         if self.current_tournament is None:
-            self.current_tournament = Tournament(self.deck_list)
+            x = input('random: Y/N ? ')
+            is_random = x in ['y', 'Y', 'Yes', 'r', 'R', 'random', '']
+            self.current_tournament = Tournament(self.deck_list, is_random)
         self.current_tournament.update()
-        self.current_tournament.print(all=False)
+        self.current_tournament.print(print_all=False)
 
     def select_deck(self) -> Deck:
         x = input('deck ? ').lower()
