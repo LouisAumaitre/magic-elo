@@ -33,7 +33,7 @@ class Match(MatchInterface):
                 self.deck2 = self.parent2.deck1
             elif self.parent2.result == 'L':
                 self.deck2 = self.parent2.deck2
-        if not ready and self.ready:
+        if not ready and self.ready and self.result == '?':
             print(f'New match ready: {self.deck1.name} vs {self.deck2.name}')
 
     @property

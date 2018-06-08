@@ -76,12 +76,12 @@ class Group:
             name = input(f'deck name [{deck.name}] ? ')
         if name != '':
             deck.name = name
-        colors = ['w', 'u', 'b', 'r', 'g']
+        colors = ['W', 'U', 'B', 'R', 'G']
         for c in colors:
             c_input = input(f'{c} [{deck.__getattribute__(c)}] ? ')
             if c_input != '':
-                deck.__setattr__(c, int(c_input))
-        self.decks[deck.name] = deck
+                deck.cards[c] = int(c_input)
+        # self.decks[deck.name] = deck
         self.save()
 
     def match(self):
