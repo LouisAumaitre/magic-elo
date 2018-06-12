@@ -189,7 +189,7 @@ class Group:
 
     def stats(self):
         print(f'decks: {len(self.decks)}')
-        matches = sum([d.wins + d.nulls/2 for d in self.decks.values()])
+        matches = sum([d.wins + d.nulls // 2 for d in self.decks.values()])
         print(f'matches: {matches}')
         colors = {'w': 0, 'u': 0, 'b': 0, 'r': 0, 'g': 0}
         elo = {'w': 0, 'u': 0, 'b': 0, 'r': 0, 'g': 0}
